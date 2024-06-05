@@ -1,0 +1,248 @@
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: tan;
+        }
+
+        h1 {
+          font-size: 60px;
+          text-align: center;
+          margin-top: 25px;
+          font-family: "Open Sans", sans-serif;
+        }
+    
+        h2 {
+          font-size: 32px;
+          line-height: 1;
+          text-align: center;
+          color: red;
+          margin-top: 1px;
+          font-family: "Open Sans", sans-serif;
+        }
+    
+        p {
+          font-size: 16px;
+          text-align: center;
+          line-height: 1.25;
+          font-family: "Open Sans", sans-serif;
+        }
+    
+        ul {
+          font-size: 16px;
+          display: inline-block;
+          text-align: left;
+          line-height: 1.75;
+          font-family: "Open Sans", sans-serif;
+        }
+    
+        div {
+          text-align: center;
+        }
+    
+        .button {
+          border: none;
+          color: white;
+          padding: 16px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          font-family: "Open Sans", sans-serif;
+          margin: 4px 2px;
+          transition-duration: 0.4s;
+          cursor: pointer;
+          margin-top: 10px;
+          margin-bottom: 0px;
+        }
+    
+        .button1 {
+          background-color: white;
+          color: black;
+          border: 2px solid red;
+          margin-right: 12px;
+        }
+
+        .rightbtn {
+          margin-right: 0px;
+        }
+    
+        .button1:hover {
+          background-color: red;
+          color: white;
+        }
+    
+        .center {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .jumbotron {
+          background: tan;
+          margin-top: 0px;
+        }
+
+        #send {
+          background-color: white;
+          color: black;
+          border: 2px solid red;
+          transition-duration: 0.4s;
+          cursor: pointer;
+        }
+
+        #send:hover {
+          background-color: red;
+          color: white;
+        }
+
+        div.scroll {
+          width: 5px;
+          height: 10px;
+          overflow-y: scroll;
+        }
+
+        .messages {
+          overflow-x: auto;
+          width: 200px;
+          height: 250px;
+          color: black;
+          scrollbar-base-color: black;
+          background-color: white;
+          border: 2px solid red;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        .alert {
+          padding: 20px;
+          background-color: #f44336;
+          color: white;
+        }
+
+        .closebtn {
+          margin-left: 15px;
+          color: white;
+          font-weight: bold;
+          float: right;
+          font-size: 22px;
+          line-height: 20px;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+
+        .closebtn:hover {
+          color: black;
+        }
+      </style>
+    
+      <title>DiceThis!</title>
+      <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    </head>
+    
+    <body>
+      <h1>DiceThis!</h1>
+    
+      <h2>Welcome to Liar's Dice!</h2> <br>
+    
+      <center><img src="https://www.creativefabrica.com/wp-content/uploads/2020/05/19/dice-vectorHand-drawing-Graphics-4151459-1-1-580x387.jpg" style="width:20%; height:20%" alt="picture not working"></center>
+      <br>
+    
+      <p>We hope you enjoy your time here! The game you are about to partake in will be:</p>
+      
+      <div>
+        <ul>
+            <li>        Strategic</li>
+            <li>        Exhilarating</li>
+            <li>Rewarding... but also brutal!</li>
+        </ul>
+      </div>
+    
+      <h2 style="font: size 24px;">Good luck!</h2>
+    
+      <div class = center>
+        <a href="lobby.html">
+        <button style="font-size: 42px" class="button button1"><strong>PLAY</strong></button>
+        </a>
+        <button style="font-size: 42px" class="button button1"><strong>SETTINGS</strong></button>
+        <div class = rightbtn>
+          <button style="font-size: 42px" class="button button1"><strong>HELP</strong></button>
+        </div>
+      </div>
+
+      <!-- <div class="container">
+        <br>
+        <div class="jumbotron">
+            <h1 class="display-4">Players Connected</h1>
+            <h2 id="player">1</h2>
+             <br>
+            <input id="name" class="form-control" placeholder="Name">
+            <br>
+            <textarea id="message" class="form-control" placeholder="Message"></textarea>
+            <br>
+            <button id="send" class="btn btn-success">Send</button>
+        </div>
+        <div id="messages">
+    
+        </div> -->
+        <!-- <center><div class = "messages">
+          <p id = "messages"></p>
+        </div></center>
+    </div> -->
+    
+
+    <!-- <div class="alert">
+      <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+      <p>You've connected to the server! Click on the "x" symbol to close the alert message.</p>
+    </div> -->
+
+    </body>
+
+
+<script>
+    var socket = io()
+    $(() => {
+        $("#send").click(()=>{
+            var message = { name: $("#name").val(), message: $("#message").val()}
+            postMessage(message)
+        })
+        getMessages()
+    })
+
+    socket.on('message', addMessage)
+    socket.on('player', adjustPlayer)
+    socket.on('welcome', welcome)
+    socket.on('boss', beBossy)
+
+    function beBossy(x) {
+        console.log("You hosted the lobby so you will go first once everyone it in - starting the game!")
+    }
+
+    function welcome(msg) {
+      console.log(`Welcome to me: ${msg.id}`)
+      addMessage({ "name": "WELCOME", "message": msg.id });
+    }
+
+    function adjustPlayer (msg) {
+      console.log("player: ", msg)
+        // $("#player").innerHtml = msg.player
+        document.getElementById("player").innerHTML = msg.player;
+    }
+    // make an ALERT here that other player joined - use their ip (they should not have to refresh)
+
+
+    function addMessage(message){
+        $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
+    }
+
+    function getMessages() {
+        $.get('http://localhost:3000/messages', (data) => {
+            data.forEach(addMessage);
+        })
+    }
+
+    function postMessage(message) {
+        $.post('http://localhost:3000/messages', message)
+    }
+</script>

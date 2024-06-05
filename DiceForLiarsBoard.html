@@ -1,0 +1,763 @@
+<!-- 
+    Author : Taylor Hotchkiss and Clayton Arnett
+   Class  : IT325
+   Task   : Liar's Dice
+ 
+   Execute: run node server.js in terminal to run the server
+ 
+   Runs the board game Liar's Dice Locally
+ -->
+ <!doctype html>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+ <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+ <script src="/socket.io/socket.io.js"></script>
+ 
+ <!DOCTYPE html>
+ 
+ <style>
+     .body {
+         /* background-color: tan; */
+         background-image: url('https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/clans//26004345/88ec5c989256508fe78de7263fa4617cba975f9f.png');
+         background-repeat: no-repeat;
+         background-attachment: fixed;  
+         background-size: cover;
+     }
+ </style>
+ <body class="body"></body>
+ <style>
+ /*.button {
+     background-color: white;
+     color: white;
+     padding: 20px;
+     vertical-align: middle;
+     margin-left: 5em;
+     margin-bottom: 10em;
+ }*/
+ 
+ .button3 {
+     display: grid;
+     grid-template-columns: 60px 60px 60px;
+     grid-template-rows: 60px 60px 60px 60px 60px 20px;
+     justify-content: center;
+ }
+ 
+ .tile {
+     background-color: red;
+     border: 1px solid black;
+     text-align: center;
+ }
+ 
+ .tile2 {
+     background-color: rgb(14, 119, 102);
+     border: 1px solid rgb(57, 84, 97);
+     text-align: center;
+ }
+ 
+ .button2 {
+     display: grid;
+     grid-template-columns: 60px 60px 60px 60px 60px 60px 60px 60px 60px 60px;
+     grid-template-rows: 60px 60px 60px 60px 60px 60px 60px;
+     justify-content: center;
+     transition-duration: 0.4s;
+     cursor: pointer;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+     color: black;
+ }
+ 
+ .tile3 {
+     background-color: black;
+     border: 1px solid black;
+ }
+ 
+ .tile4 {
+     background-color: rgb(214, 121, 129);
+     border: 1px solid rgb(57, 84, 97);
+     text-decoration:underline;
+ }
+ 
+ .tile5 {
+     background-color: rgb(217, 231, 12);
+     border: 1px solid rgb(57, 84, 97);
+     transition-duration: 0.4s;
+     cursor: pointer;
+ }
+ 
+ .open-button:hover {
+   background-color: red;
+   color: white;
+ }
+ 
+ .open-button2:hover {
+   background-color: red;
+   color: white;
+ }
+ 
+ .open-button:checked{
+     background-color: red;
+     color: white;
+ }
+ 
+ .open-button2:active{
+     background-color: red;
+     color: white;
+ }
+ 
+ .p1 {
+     color:black;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ }
+ 
+ .jumbotron {
+     background: transparent;
+     margin-top: 1px;
+     padding: 1px;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+     }
+ 
+ .open-button {
+     background-color: rgb(14, 119, 102);
+     border: 1px solid rgb(57, 84, 97);
+     text-align: center;
+     transition-duration: 0.4s;
+     cursor: pointer;
+ }
+ 
+ .open-button2 {
+     background-color: rgb(217, 231, 12);
+     border: 1px solid rgb(57, 84, 97);
+     text-align: center;
+     transition-duration: 0.4s;
+     cursor: pointer;
+ }
+ 
+ /* The popup form - hidden by default */
+ .form-popup {
+   display: none;
+   position: fixed;
+   bottom: 0;
+   right: 15px;
+   z-index: 9;
+ }
+ 
+ /* Add styles to the form container */
+ .form-container {
+   max-width: 150px;
+   padding: 10px;
+   background-color: transparent;
+ }
+ 
+ /* Full-width input fields */
+ .form-container input[type=text], .form-container input[type=password] {
+   width: 50%;
+   padding: 5px;
+   margin: 5px 0 22px 0;
+   border: none;
+   background: transparent;
+ }
+ 
+ /* When the inputs get focus, do something */
+ .form-container input[type=text]:focus, .form-container input[type=password]:focus {
+   background-color: #ddd;
+   outline: none;
+ }
+ 
+ /* Set a style for the submit/login button */
+ .form-container .btn {
+   background-color: #04AA6D;
+   color: white;
+   padding: 4px 5px;
+   border: none;
+   cursor: pointer;
+   width: 60px;
+   margin-bottom:5px;
+   opacity: 0.8;
+ }
+ 
+ .call-button {
+     background-color: red;
+     border: 1px solid black;
+     text-align: center;
+     transition-duration: 0.4s;
+     padding: 1px;
+     cursor: pointer;
+     width: 50px;
+     height: 40px;
+ }
+ 
+ .disabled {
+     pointer-events: none;
+ }
+ 
+ .call-button:hover {
+     background-color: darkred;
+     color: white;
+ }
+ 
+ .spoton-button {
+     background-color: skyblue;
+     border: 1px solid black;
+     text-align: center;
+     transition-duration: 0.4s;
+     padding: 1px;
+     cursor: pointer;
+     width: 70px;
+     height: 40px;
+ }
+ 
+ .spoton-button:hover {
+     background-color: blue;
+     color: white;
+ }
+ 
+ /* Add a red background color to the cancel button */
+ .form-container .cancel {
+   background-color: red;
+ }
+ 
+ /* Add some hover effects to buttons */
+ .form-container .btn:hover, .open-button:hover {
+   opacity: 1;
+ }
+ 
+ .btncancel {
+     background-color: red;
+     color: white;
+     width: 100%;
+     border: 0px;
+     transition-duration: 0.4s;
+     cursor: pointer;
+ }
+ 
+ h1 {
+     color: black;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ }
+ 
+ h2 {
+     color: black;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ }
+ 
+ #result {
+     color: black;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+     font-size: 20px;
+ }
+ 
+ #result2 {
+     color: black;
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+     font-size: 20px;
+ }
+ 
+ </style>
+ <div class="container">
+     <br>
+     <div class="jumbotron">
+         <center><h1 class="display-4">Players Connected</h1></center>
+         <center><h2 id="player">1</h2></center>
+         <br>
+     </div>
+        <center><h1 class="display-4">Player: </h1></center>
+        <center><h2 id="playerid">1</h2></center>
+ </div>
+ <div>
+     <center><h1 class="p1" id="0"></h1></center>
+     <div class="button2">
+         <button class="open-button" id="1" onclick="openForm()">1</button>
+         <button class="open-button2" id="1*" onclick="closeForm()">1*</button>
+         <button class="open-button" id="2" onclick="openForm()">2</button>
+         <button class="open-button" id="3" onclick="openForm()">3</button>
+         <button class="open-button2" id="2*" onclick="closeForm()">2*</button>
+         <button class="open-button" id="4" onclick="openForm()">4</button>
+         <button class="open-button" id="5" onclick="openForm()">5</button>
+         <button class="open-button2" id="3*" onclick="closeForm()">3*</button>
+         <button class="open-button" id="6" onclick="openForm()">6</button>
+         <button class="open-button" id="7" onclick="openForm()">7</button>
+         <button class="open-button" id="20" onclick="openForm()">20</button>
+         <button class="tile4"><p1>30</p1></button>
+         <button class="tile4"><p1>29</p1></button>
+         <button class="tile4"><p1>28</p1></button>
+         <button class="tile3"></button>
+         <button class="tile3"></button>
+         <button class="tile4"><p1>15</p1></button>
+         <button class="tile4"><p1>14</p1></button>
+         <button class="tile4"><p1>13</p1></button>
+         <button class="open-button2" id="4*" onclick="closeForm()">4*</button>
+         <button class="open-button2" id="10*" onclick="closeForm()">10*</button>
+         <button class="tile4"><p1>27</p1></button>
+         <button class="tile4"><p1>26</p1></button>
+         <button class="tile4"><p1>25</p1></button>
+         <button class="tile3"></button>
+         <button class="tile3"></button>
+         <button class="tile4"><p1>12</p1></button>
+         <button class="tile4"><p1>11</p1></button>
+         <button class="tile4"><p1>10</p1></button>
+         <button class="open-button" id="8" onclick="openForm()">8</button>
+         <button class="open-button" id="19" onclick="openForm()">19</button>
+         <button class="tile4"><p1>24</p1></button>
+         <button class="tile4"><p1>23</p1></button>
+         <button class="tile4"><p1>22</p1></button>
+         <button class="tile3"></button>
+         <button class="tile3"></button>
+         <button class="tile4"><p1>9</p1></button>
+         <button class="tile4"><p1>8</p1></button>
+         <button class="tile4"><p1>7</p1></button>
+         <button class="open-button" id="9" onclick="openForm()">9</button>
+         <button class="open-button" id="18" onclick="openForm()">18</button>
+         <button class="tile4"><p1>21</p1></button>
+         <button class="tile4"><p1>20</p1></button>
+         <button class="tile4"><p1>19</p1></button>
+         <button class="tile3"></button>
+         <button class="tile3"></button>
+         <button class="tile4"><p1>6</p1></button>
+         <button class="tile4"><p1>5</p1></button>
+         <button class="tile4"><p1>4</p1></button>
+         <button class="open-button2" id="5*" onclick="closeForm()">5*</button>
+         <button class="open-button2" id="9*" onclick="closeForm()">9*</button>
+         <button class="tile4"><p1>18</p1></button>
+         <button class="tile4"><p1>17</p1></button>
+         <button class="tile4"><p1>16</p1></button>
+         <button class="tile3"></button>
+         <button class="tile3"></button>
+         <button class="tile4"><p1>3</p1></button>
+         <button class="tile4"><p1>2</p1></button>
+         <button class="tile4"><p1>1</p1></button>
+         <button class="open-button" id="10" onclick="openForm()">10</button>
+         <button class="open-button" id="17" onclick="openForm()">17</button>
+         <button class="open-button" id="16" onclick="openForm()">16</button>
+         <button class="open-button2" id="8*" onclick="closeForm()">8*</button>
+         <button class="open-button" id="15" onclick="openForm()">15</button>
+         <button class="open-button" id="14" onclick="openForm()">14</button>
+         <button class="open-button2" id="7*" onclick="closeForm()">7*</button>
+         <button class="open-button" id="13" onclick="openForm()">13</button>
+         <button class="open-button" id="12" onclick="openForm()">12</button>
+         <button class="open-button2" id="6*" onclick="closeForm()">6*</button>
+         <button class="open-button" id="11" onclick="openForm()">11</button>
+     </div>
+ 
+     <center><button class="call-button" id="call" onclick="work()">Call</button></center>
+     <center><button class="spoton-button" id="spoton" onclick="spoton()">Spot On</button></center>
+ 
+     <br>
+ 
+     <center><h2>Your Dice:</h2></center>
+
+    <center><p id="1d"></p>
+    <p id="2d"></p>
+    <p id="3d"></p>
+    <p id="4d"></p>
+    <p id="5d"></p>
+    <p id="6d"></p></center>
+ 
+ </div>
+ <div class="form-popup" id="myForm">
+     <form action="/action_page.php" class="form-container">
+         <center><button type="button" class="btn cancel" onclick="closeForm()" id="1.2">1</button>
+         <button type="button" class="btn cancel" onclick="closeForm()" id="2.2">2</button></center>
+         <center><button type="button" class="btn cancel" onclick="closeForm()" id="3.2">3</button>
+         <button type="button" class="btn cancel" onclick="closeForm()" id="4.2">4</button></center>
+         <center><button type="button" class="btn cancel" onclick="closeForm()" id="5.2">5</button>
+         <button type="button" class="btn cancel" onclick="closeForm()" id="6.2">*</button></center>
+         <center><button type="button" class="btncancel" onclick="closeForm()">Cancel</button></center>
+     </form>
+ </div>
+ <center><div id="result"></div>
+ <div id="result2"></div></center>
+ <center><div id="turn"></div></center>
+ 
+ <br>
+ 
+ <script>
+ 
+     const buttons = document.getElementsByTagName("button");
+     const result = document.getElementById("result");
+     var number = 0;
+     var side = 0;
+     const buttonPressed = e => { 
+         if (e.target.id == "1") {
+             number = 1;
+             result.innerHTML = number;
+         } else if (e.target.id == "2") {
+             number = 2;
+             result.innerHTML = "You pressed 2";
+         } else if (e.target.id == "3") {
+             number = 3;
+             result.innerHTML = "You pressed 3";
+         } else if (e.target.id == "4") {
+             number = 4;
+             result.innerHTML = "You pressed 4";
+         } else if (e.target.id == "5") {
+             number = 5;
+             result.innerHTML = "You pressed 5";
+         } else if (e.target.id == "6") {
+             number = 6;
+             result.innerHTML = "You pressed 6";
+         } else if (e.target.id == "7") {
+             number = 7;
+             result.innerHTML = "You pressed 7";
+         } else if (e.target.id == "8") {
+             number = 8;
+             result.innerHTML = "You pressed 8";
+         } else if (e.target.id == "9") {
+             number = 9;
+             result.innerHTML = "You pressed 9";
+         } else if (e.target.id == "10") {
+             number = 10;
+             result.innerHTML = "You pressed 10";
+         } else if (e.target.id == "11") {
+             number = 11;
+             result.innerHTML = "You pressed 11";
+         } else if (e.target.id == "12") {
+             number = 12;
+             result.innerHTML = "You pressed 12";
+         } else if (e.target.id == "13") {
+             number = 13;
+             result.innerHTML = "You pressed 13";
+         } else if (e.target.id == "14") {
+             number = 14;
+             result.innerHTML = "You pressed 14";
+         } else if (e.target.id == "15") {
+             number = 15;
+             result.innerHTML = "You pressed 15";
+         } else if (e.target.id == "16") {
+             number = 16;
+             result.innerHTML = "You pressed 16";
+         } else if (e.target.id == "17") {
+             number = 17;
+             result.innerHTML = "You pressed 17";
+         } else if (e.target.id == "18") {
+             number = 18;
+             result.innerHTML = "You pressed 18";
+         } else if (e.target.id == "19") {
+             number = 19;
+             result.innerHTML = "You pressed 19";
+         } else if (e.target.id == "20") {
+             number = 20;
+             result.innerHTML = "You pressed 20";
+         } else if (e.target.id == "1*") {
+             number = 1;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "2*") {
+             number = 2;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "3*") {
+             number = 3;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "4*") {
+             number = 4;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "5*") {
+             number = 5;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "6*") {
+             number = 6;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "7*") {
+             number = 7;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "8*") {
+             number = 8;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "9*") {
+             number = 9;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "10*") {
+             number = 10;
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         } else if (e.target.id == "1.2") {
+             side = 1;
+             bid();
+             result.innerHTML = "You bid " + number + " " + side;
+         } else if (e.target.id == "2.2") {
+             side = 2;
+             bid();
+             result.innerHTML = "You bid " + number + " " + side;
+         } else if (e.target.id == "3.2") {
+             side = 3;
+             bid();
+             result.innerHTML = "You bid " + number + " " + side;
+         } else if (e.target.id == "4.2") {
+             side = 4;
+             bid();
+             result.innerHTML = "You bid " + number + " " + side;
+         } else if (e.target.id == "5.2") {
+             side = 5;
+             bid();
+             result.innerHTML = "You bid " + number + " " + side;
+         } else if (e.target.id == "6.2") {
+             side = 6;
+             bid();
+             result.innerHTML = "You bid " + number + " " + "*";
+         }
+     }
+ 
+     for (let button of buttons) {
+         button.addEventListener("click", buttonPressed);
+     }
+ 
+     //socket.on('bidd', getBids);
+ 
+     function spoton() {
+         socket.emit('spoton', playerid);
+     }
+ 
+     function getBids(bid) {
+         currentBid = bid;
+         //console.log(currentBid);
+         bid(currentBid.number, currentBid.side, currentBid.id);
+     }
+ 
+     function postBids(bid) {
+         currentBid = bid;
+         console.log(currentBid);
+         $.post('http://localhost:3000/bids', bid);
+     }
+ 
+     //socket.on('bids', postBids);
+ 
+     //socket.on('bidding', bidding2);
+ 
+     var currentBid = { number: 0, side: (0), id: (playerid)};
+     function bid() {
+         var bod = { number: (number), side: (side), id: (playerid)};
+         console.log(playerid);
+         socket.emit('bid', playerid, currentBid, bod);
+     }
+ 
+     function bidding2() {
+         console.log("work");
+     }
+ 
+     function openForm() {
+         document.getElementById("myForm").style.display = "block";
+     }
+     function closeForm() {
+         document.getElementById("myForm").style.display = "none";
+     }
+ 
+     function work() {
+         socket.emit('caller', currentBid, playerid);
+     }
+ 
+     //6s are *s
+     //make a function that takes in the number of dice and the number of sides
+     //make the dice number 0 and if its 0 dont reroll? Maybe try doing this with a for loop
+     var socket = io()
+     $(() => {
+         $("#send").click(()=>{
+             var message = { name: $("#name").val(), message: $("#message").val()}
+             postMessage(message)
+         })
+         getMessages()
+     })
+ 
+     function getSentence(sen) {
+         document.getElementById("result2").innerHTML = sen;
+     }
+ 
+     socket.on('message', addMessage)
+     socket.on('players', adjustPlayer)
+     socket.on('welcome', welcome)
+     socket.on('boss', beBossy)
+     socket.on('three', threePlayers)
+     socket.on('num', getRndInteger)
+     socket.on('num2', getRndInteger2)
+     socket.on('num3', getRndInteger3)
+     socket.on('num4', getRndInteger4)
+     socket.on('num5', getRndInteger5)
+     socket.on('num6', getRndInteger6)
+     socket.on('nums', getNums)
+     socket.on('player', getPlayersid)
+     socket.on('sentence', getSentence)
+     socket.on('postBids', postBids)
+     socket.on('notbid', notbid)
+     socket.on('resetroll', resetroll)
+    //  socket.on('turn', turn)
+ 
+    //  function turn(turnid) {
+    //     turnid2 = turnid.player;
+    //     console.log(turnid);
+    //     document.getElementById("turn").innerHTML = "Your turn " + turnid2;
+    //  }
+
+     function notbid() {
+         side = currentBid.side;
+         number = currentBid.number;
+         document.getElementById("result2").innerHTML = "Not your turn";
+     }
+ 
+     var playerid = 0;
+     function getPlayersid(id) {
+        //console.log(id);
+        playerid = id;
+        document.getElementById("playerid").innerHTML = playerid;
+     }
+ 
+     function beBossy(x) {
+         console.log("You hosted the lobby so you will go first once everyone is in - starting the game!")
+     }
+ 
+     function welcome(msg) {
+       console.log(`Welcome to the game player ${msg.id}!`)
+       addMessage({ "name": "WELCOME", "message": msg.id });
+     }
+ 
+     function adjustPlayer (msg) {
+         console.log("player: ", msg)
+         //$("#player").innerHtml = msg.player
+         document.getElementById("player").innerHTML = msg.player;
+         console.log("player: ", msg)
+     }
+     //make an ALERT here that other player joined - use their ip (they should not have to refresh)
+ 
+ 
+     function addMessage(message){
+         $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
+     }
+ 
+     function getMessages() {
+         $.get('http://localhost:3000/DiceForLiarsBoard.html/messages', (data) => {
+             data.forEach(addMessage);
+         })
+     }
+ 
+     function postMessage(message) {
+         $.post('http://localhost:3000/DiceForLiarsBoard.html/messages', message)
+     }
+ 
+     function threePlayers(x){
+         console.log("Go");
+         document.getElementById("0").innerHTML = "Go";
+     }
+ 
+     var diff = 0;
+ 
+     function resetroll() {
+         document.getElementById("1d").innerHTML = "";
+         document.getElementById("2d").innerHTML = "";
+         document.getElementById("3d").innerHTML = "";
+         document.getElementById("4d").innerHTML = "";
+         document.getElementById("5d").innerHTML = "";
+     }
+ 
+     function getRndInteger(value) {
+         if (value == 1) {
+             document.getElementById("1d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("1d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("1d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("1d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("1d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("1d").innerHTML = "*"
+         }
+     }
+     function getRndInteger2(value) {
+         if (value == 1) {
+             document.getElementById("2d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("2d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("2d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("2d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("2d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("2d").innerHTML = "*"
+         }
+     }
+     function getRndInteger3(value) {
+         if (value == 1) {
+             document.getElementById("3d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("3d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("3d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("3d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("3d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("3d").innerHTML = "*"
+         }
+     }
+     function getRndInteger4(value) {
+         if (value == 1) {
+             document.getElementById("4d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("4d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("4d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("4d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("4d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("4d").innerHTML = "*"
+         }
+     }
+     function getRndInteger5(value) {
+         if (value == 1) {
+             document.getElementById("5d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("5d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("5d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("5d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("5d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("5d").innerHTML = "*"
+         }
+     }
+     function getRndInteger6(value) {
+         if (value == 1) {
+             document.getElementById("6d").innerHTML = 1
+         } else if (value == 2) {
+             document.getElementById("6d").innerHTML = 2
+         } else if (value == 3) {
+             document.getElementById("6d").innerHTML = 3
+         } else if (value == 4) {
+             document.getElementById("6d").innerHTML = 4
+         } else if (value == 5) {
+             document.getElementById("6d").innerHTML = 5
+         } else if (value == 6) {
+             document.getElementById("6d").innerHTML = "*"
+         }
+     }
+ 
+     var nums = [0, 0, 0, 0, 0, 0];
+ 
+     function getNums(arr) {
+         nums = arr;
+         console.log(nums);
+     }
+ </script>
